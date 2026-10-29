@@ -6,28 +6,21 @@
     body { width: 340px; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 14px; background-color: #f8f9fa; }
     .card { background: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); padding: 14px; border: 1px solid #e9ecef; }
     .header { font-size: 14px; font-weight: 700; color: #212529; border-bottom: 2px solid #2b8a3e; padding-bottom: 6px; margin-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    /* Dynamic Allocation Display Blocks */
     .allocation-container { background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
     .price-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
     .price-total { font-size: 16px; font-weight: 700; color: #1c7ed6; border-top: 1px dashed #ced4da; padding-top: 4px; margin-top: 4px; }
     .billing-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; display: inline-block; }
     .badge-one-time { background: #e7f5ff; color: #1c7ed6; border: 1px solid #a5d8ff; }
     .badge-monthly { background: #fff4e6; color: #f59f00; border: 1px solid #ffe3b3; }
-
     .btn-auto { width: 100%; background-color: #2b8a3e; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-auto:hover { background-color: #237032; }
-    
-    /* Telemetry Counters */
-    .status-box { margin-top: 10px; background: #fff5f5; border: 1px solid #ffc9c9; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; color: #c92a2a; text-align: center; }
-    .ledger-logs { margin-top: 10px; font-size: 11px; max-height: 80px; overflow-y: auto; background: #343a40; color: #a6a7ab; padding: 6px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+    .status-box { margin-top: 10px; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; color: #2b8a3e; text-align: center; }
+    .ledger-logs { margin-top: 10px; font-size: 11px; max-height: 100px; overflow-y: auto; background: #343a40; color: #a6a7ab; padding: 6px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="header">💸 FWO Autopilot Checkout Engine</div>
-    
-    <!-- Dynamic Ledger Field Mappings -->
+    <div class="header">💸 FWO Production Checkout Engine</div>
     <div class="allocation-container">
       <div class="price-row">
         <span>One-Time Hardware:</span>
@@ -42,14 +35,13 @@
         <span>$1,848.99</span>
       </div>
       <div style="margin-top: 6px; display: flex; gap: 4px;">
-        <span class="billing-badge badge-one-time">One-Time Asset</span>
-        <span class="billing-badge badge-monthly">Monthly Sequence</span>
+        <span class="billing-badge badge-one-time">Live Production</span>
+        <span class="billing-badge badge-monthly">Multi-Node</span>
       </div>
     </div>
-
     <button id="injectBtn" class="btn-auto">Pay with FWO Vault Account</button>
-    <div id="logSummary" class="status-box">Status: IDLE_WAITING | TTL: 45s</div>
-    <div class="ledger-logs" id="ledgerLogs">> System standing by for multi-stage allocation...</div>
+    <div id="logSummary" class="status-box">Status: READY_CONNECTED</div>
+    <div class="ledger-logs" id="ledgerLogs">> Pipeline standing by for production verification...</div>
   </div>
   <script src="popup.js"></script>
 </body>
