@@ -69,3 +69,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     ledgerLogs.innerText += `\n> Warning: Out-of-bounds webview protocol detected.`;
   }
 });
+
+
+
+// ============================================================================
+// FWO CONTEXTUAL CORE ENHANCEMENT: ENTERPRISE INTERACTION CONTROLLER INTERFACE
+// ============================================================================
+
+if (document.getElementById('injectBtn')) {
+  document.getElementById('injectBtn').addEventListener('click', async () => {
+    const logSummary = document.getElementById('logSummary');
+    const ledgerLogs = document.getElementById('ledgerLogs');
+    const targetCloudInboundGate = 'https://onrender.com';
+
+    if (logSummary) logSummary.innerText = 'Orchestrating...';
+    if (ledgerLogs) ledgerLogs.innerText += '\n> Running multi-stage system evaluation checks over cloud infrastructure...';
+
+    const [focusedTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!focusedTab) return;
+
+    // Securely pull transactional clearance payload structures down from your active Render container
+    fetch(targetCloudInboundGate, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: "INITIAL_VAULT_QUERY", origin: focusedTab.url })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "AUTHORIZED") {
+        const pipelineRoutingToken = data.iso_bin_routing_token;
+        const generatedVaultReceiptCode = data.vault_receipt;
+
+        // Securely cache Receipt 1 into browser thread parameters
+        chrome.storage.local.set({ "active_vault_receipt": generatedVaultReceiptCode });
+
+        if (logSummary) logSummary.innerHTML = "<strong>CORE AGENT ACTIVE</strong>";
+        if (ledgerLogs) ledgerLogs.innerText += `\n> Assigned Vault Code: ${generatedVaultReceiptCode}\n> Dispatching token variables to frame interaction nodes...`;
+
+        // Pass cross-process messaging block down into content.js to trigger automation
+        chrome.tabs.sendMessage(focusedTab.id, { 
+          action: "EXECUTE_ENTERPRISE_PIPELINE", 
+          tokenData: pipelineRoutingToken,
+          vaultReceipt: generatedVaultReceiptCode
+        }, (pipelineResponse) => {
+          if (!chrome.runtime.lastError && pipelineResponse) {
+            if (ledgerLogs) ledgerLogs.innerText += `\n> Engine Pipeline Verification: ${pipelineResponse.status}`;
+            // Automatically close the popout panel workspace since the content machine owns execution control
+            setTimeout(() => { window.close(); }, 1500);
+          }
+        });
+      }
+    })
+    .catch(err => {
+      if (logSummary) { logSummary.style.color = '#c92a2a'; logSummary.innerText = 'ROUTING EXCEPTION'; }
+    });
+  });
+}
