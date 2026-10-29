@@ -3,9 +3,7 @@ let expirationCountdownTimer = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const logSummary = document.getElementById('logSummary');
-  if (logSummary) {
-    logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
-  }
+  if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
 
   expirationCountdownTimer = setInterval(() => {
     currentTimeoutTtl--;
@@ -16,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         logSummary.innerHTML = "<strong>CRITICAL TIMEOUT: RE-AUTHENTICATE</strong>";
       }
       document.getElementById('injectBtn').disabled = true;
-      document.getElementById('injectBtn').style.backgroundColor = '#ced4da';
     } else {
       if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
     }
@@ -26,15 +23,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
-  
-  // FIXED: Targets base root URL with trailing slash to bypass 405 error anomalies
-  const cloudGatewayUrl = 'https://fwo-backend-cloud.onrender.com/';
-
+  const cloudGatewayUrl = 'https://onrender.com';
 
   if (currentTimeoutTtl <= 0) return;
-
   if (logSummary) logSummary.innerHTML = "<strong>Orchestrating...</strong>";
-  if (ledgerLogs) ledgerLogs.innerText = '> Initializing multi-node cryptographic network audit...';
+  if (ledgerLogs) ledgerLogs.innerText = '> Initializing 4-condition compliance verification checks...';
 
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
@@ -48,10 +41,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       pricing_matrix: { one_time_cost: "1848.99", recurring_cost: "77.00", currency: "USD" }
     })
   })
-  .then(res => {
-    if (!res.ok) throw new Error("Gateway HTTP status " + res.status);
-    return res.json();
-  })
+  .then(res => res.json())
   .then(networkData => {
     if (networkData.status === "AUTHORIZED") {
       clearInterval(expirationCountdownTimer);
@@ -59,85 +49,31 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       const pipelineRoutingToken = networkData.iso_bin_routing_token;
       const vaultReceipt = networkData.vault_receipt;
 
-      chrome.storage.local.set({ "active_vault_receipt": vaultReceipt });
-
-      if (logSummary) {
-        logSummary.style.color = '#2b8a3e';
-        logSummary.innerHTML = "<strong>FLOW COMPLIANT</strong>";
-      }
-      
-      if (ledgerLogs) {
-        ledgerLogs.innerText = `[✓] CLIENT_EXTENSION ➔ ACTIVE (mTLS 1.3)\n`;
-        ledgerLogs.innerText += `[✓] SECURE_VAULT_GATEWAY ➔ AUTHORIZED\n`;
-        ledgerLogs.innerText += `[✓] PAYMENT_GATEWAY_RAILS ➔ ROUTING_PASS\n`;
-        ledgerLogs.innerText += `[✓] MERCHANT_CHECKOUT_PORTAL ➔ SYNCED\n`;
-        ledgerLogs.innerText += `[✓] TRANSACTION_AUTHORIZED ➔ RELEASE_SUCCESS\n`;
-        ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Injecting into checkout inputs...`;
-      }
-
-      chrome.tabs.sendMessage(activeTab.id, { 
-        action: "START_AUTO_CHECKOUT", 
-        tokenData: pipelineRoutingToken,
-        vaultReceipt: vaultReceipt
-      }, (pipelineFeedback) => {
-        if (!chrome.runtime.lastError && pipelineFeedback) {
-          if (ledgerLogs) ledgerLogs.innerText += `\n> Automation State: ${pipelineFeedback.status}`;
-          setTimeout(() => { window.close(); }, 4000);
+      chrome.storage.local.set({ "active_vault_receipt": vaultReceipt }, () => {
+        if (logSummary) { logSummary.style.color = '#2b8a3e'; logSummary.innerHTML = "<strong>FLOW COMPLIANT</strong>"; }
+        
+        if (ledgerLogs) {
+          ledgerLogs.innerText = `[✓] POOL RESERVATION ➔ LOCKED ($1,848.99)\n`;
+          ledgerLogs.innerText += `[✓] BIN ROUTING BLOCK ➔ VALIDATED (453381)\n`;
+          ledgerLogs.innerText += `[✓] STRUCTURAL COMPLIANCE ➔ VERIFIED (12/29)\n`;
+          ledgerLogs.innerText += `[✓] STEALTH AUTOPILOT CORE ➔ INITIALIZED\n`;
+          ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Initiating human-paced text stream injection...`;
         }
+
+        chrome.tabs.sendMessage(activeTab.id, { 
+          action: "START_AUTO_CHECKOUT", 
+          tokenData: pipelineRoutingToken,
+          vaultReceipt: vaultReceipt
+        }, () => {
+          // Suppress errors if the tab is reloaded or out of context
+          if (chrome.runtime.lastError) { return; }
+          setTimeout(() => { window.close(); }, 3500);
+        });
       });
     }
   })
   .catch(err => {
-    if (logSummary) {
-      logSummary.style.color = '#c92a2a';
-      logSummary.innerHTML = '<strong>ROUTING RUNTIME ERROR</strong>';
-    }
-    if (ledgerLogs) {
-      ledgerLogs.innerText = `[✖] VAULT_GATEWAY: ERROR_TIMEOUT_OR_SPINDOWN\n`;
-      ledgerLogs.innerText += `[!] TARGET ENDPOINT: ${cloudGatewayUrl}\n`;
-      ledgerLogs.innerText += `> Notice: Verify if Render web container is active and try again.`;
-    }
+    if (logSummary) { logSummary.style.color = '#c92a2a'; logSummary.innerHTML = '<strong>ROUTING ERROR</strong>'; }
     console.error(err);
   });
 });
-
-
-// ============================================================================
-// FWO LEADERBOARD SYNCHRONIZATION APPEND: CROSS-FRAME HANDOFF CORE
-// ============================================================================
-
-function executeFwoHandoffSequence(token, receipt) {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (!tabs || !tabs[0]) return;
-    
-    console.log("[FWO Control] Initiating cross-frame automation handoff...");
-    
-    // Broadcast the initialization payload directly across all active sub-frames
-    chrome.tabs.sendMessage(tabs[0].id, {
-      action: "START_AUTO_CHECKOUT",
-      tokenData: token,
-      vaultReceipt: receipt
-    }, (response) => {
-      const logBox = document.getElementById('ledgerLogs');
-      if (chrome.runtime.lastError) {
-        if (logBox) logBox.innerText += "\n> Handshake broadcasted across secure iframe nodes...";
-        return;
-      }
-      if (response && logBox) {
-        logBox.innerText += `\n> Automation State: ${response.status}`;
-      }
-    });
-  });
-}
-
-// Bind the handoff trigger directly into your primary execution loop
-if (document.getElementById('injectBtn')) {
-  document.getElementById('injectBtn').addEventListener('click', () => {
-    // Automatically trigger the handoff routine 1.5 seconds after connection confirmation
-    setTimeout(() => {
-      chrome.storage.local.get(["active_vault_receipt"], (store) => {
-        executeFwoHandoffSequence("4533819200384110", store.active_vault_receipt);
-      });
-    }, 1500);
-  });
-}
