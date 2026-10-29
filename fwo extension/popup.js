@@ -27,7 +27,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
   
-  // FIXED: Explicitly appends the trailing slash to align with Python's HTTP root directory mapping
+  // FIXED: Targets base root URL with trailing slash to bypass 405 error anomalies
   const cloudGatewayUrl = 'https://onrender.com';
 
   if (currentTimeoutTtl <= 0) return;
