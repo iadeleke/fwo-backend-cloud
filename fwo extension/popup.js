@@ -57,7 +57,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   })
   .then(res => res.json())
   .then(networkData => {
-    // FIXED: Corrected reference from 'data.status' to 'networkData.status'
+    // FIXED: Uniformly mapped to pull data from networkData payload parameters
     if (networkData.status === "AUTHORIZED") {
       clearInterval(expirationCountdownTimer);
       
