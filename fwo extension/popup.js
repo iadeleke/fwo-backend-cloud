@@ -38,14 +38,12 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   if (currentTimeoutTtl <= 0) return;
 
   if (logSummary) logSummary.innerHTML = "<strong>Orchestrating...</strong>";
-  if (ledgerLogs) ledgerLogs.innerText += '\n> Running multi-stage system evaluation checks...';
+  if (ledgerLogs) ledgerLogs.innerText = '> Initiating multi-node network infrastructure sync...';
 
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  if (ledgerLogs) ledgerLogs.innerText += `\n> Ping verified. Initializing secure cross-origin payment handshake...`;
-
-  // Dispatch secure configuration block to release funds based on your explicit agreement profile
+  // Dispatch secure payload structure to pull down your verified tokens
   fetch(cloudGatewayUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -57,7 +55,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   })
   .then(res => res.json())
   .then(networkData => {
-    // FIXED: Uniformly mapped to pull data from networkData payload parameters
     if (networkData.status === "AUTHORIZED") {
       clearInterval(expirationCountdownTimer);
       
@@ -68,14 +65,11 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
 
       if (logSummary) logSummary.innerHTML = "<strong>AUTOMATION ACTIVE</strong>";
       
-      if (networkData.interbank_routing) {
-        const netRoute = networkData.interbank_routing;
-        if (ledgerLogs) {
-          ledgerLogs.innerText += `\n> Ingress Channel: ${netRoute.network_ingress_node}`;
-          ledgerLogs.innerText += `\n> ISO BIN Lock: ${netRoute.primary_bin_block} // ${netRoute.secondary_bin_block}`;
-          ledgerLogs.innerText += `\n> Protocol Verification: ${netRoute.security_protocol} [PASS]`;
-          ledgerLogs.innerText += `\n> Conveying structural parameters to page DOM context...`;
-        }
+      // Stream each structural network connection log node explicitly to the UI console
+      if (networkData.network_telemetry_logs) {
+        networkData.network_telemetry_logs.forEach(logLine => {
+          if (ledgerLogs) ledgerLogs.innerText += `\n${logLine}`;
+        });
       }
 
       // Convey automated instructions down into content.js running on web context
@@ -86,13 +80,12 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       }, (pipelineFeedback) => {
         if (!chrome.runtime.lastError && pipelineFeedback) {
           if (ledgerLogs) ledgerLogs.innerText += `\n> Page Execution Update: ${pipelineFeedback.status}`;
-          setTimeout(() => { window.close(); }, 1800);
+          setTimeout(() => { window.close(); }, 3000); // 3s pause to let the user review connection logs
         }
       });
     }
-  })
-  .catch(err => {
+  } catch (err) {
     if (logSummary) { logSummary.style.color = '#c92a2a'; logSummary.innerText = 'GATEWAY ERROR'; }
-    console.error("[FWO Exception Loop]", err);
+    console.error("[FWO Context Exception Handled]", err);
   });
 });
