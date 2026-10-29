@@ -45,3 +45,27 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
     logSummary.innerText = 'GATEWAY ERROR: Retry build.';
   });
 });
+
+
+// ============================================================================
+// FWO CONTEXTUAL EXTENSION APPEND: DYNAMIC DOMAIN VERIFICATION AGENT
+// ============================================================================
+
+// Intercept window tracking metrics on interface activation loops
+document.addEventListener('DOMContentLoaded', async () => {
+  const ledgerLogs = document.getElementById('ledgerLogs');
+  
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!activeTab || !ledgerLogs) return;
+
+  try {
+    const formattedUrl = new URL(activeTab.url);
+    const checkoutHost = formattedUrl.hostname;
+
+    // Display the actively matched checkout portal inside your terminal console panel
+    ledgerLogs.innerText += `\n> Target Portal Detected: https://${checkoutHost}`;
+    ledgerLogs.innerText += `\n> Context Locked: Standing by to authorize transaction...`;
+  } catch (urlException) {
+    ledgerLogs.innerText += `\n> Warning: Out-of-bounds webview protocol detected.`;
+  }
+});
