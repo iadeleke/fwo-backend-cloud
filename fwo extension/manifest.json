@@ -1,1 +1,15 @@
-{"manifest_version":3,"name":"Finance Wallet Onboarding (FWO) Link","version":"1.0.5","permissions":["activeTab","scripting"],"host_permissions":["https://*/*","http://*/*"],"background":{"service_worker":"background.js"},"content_scripts":[{"matches":["https://*/*","http://*/*"],"js":["content.js"],"run_at":"document_idle","all_frames":true}]}
+{
+  "manifest_version": 3,
+  "name": "Finance Wallet Onboarding (FWO) Link",
+  "version": "1.0.5",
+  "description": "Secure financial-grade ingress gateway adapter interface mapping.",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Query FWO Secure Vault"
+  }
+}
