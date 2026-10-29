@@ -1,28 +1,34 @@
 {
   "manifest_version": 3,
   "name": "Finance Wallet Onboarding (FWO) Link",
-  "version": "1.1.5",
-  "description": "Multi-node cryptographic receipt orchestration and automated cloud checkout engine.",
+  "version": "1.2.0",
+  "description": "Enterprise W3C Payment Handler and Live Google Pay Production Token Pass-Through Engine.",
   "permissions": [
     "scripting",
     "activeTab",
     "storage",
-    "clipboardWrite"
+    "clipboardWrite",
+    "clipboardRead"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://*/*"
+    "https://*://*",
+    "https://payments://*",
+    "https://pay://*"
   ],
   "content_scripts": [
     {
-      "matches": ["https://*/*", "http://*/*"],
+      "matches": [
+        "https://*://*",
+        "https://payments://*",
+        "https://pay://*"
+      ],
       "js": ["content.js"],
-      "run_at": "document_idle",
+      "run_at": "document_start",
       "all_frames": true
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "FWO Orchestration Core"
+    "default_title": "FWO Live Production Gateway"
   }
 }
