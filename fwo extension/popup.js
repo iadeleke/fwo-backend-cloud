@@ -27,7 +27,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
   
-  // FIX: Shift target endpoint path to root '/' to match Python's base server configuration
+  // FIXED: Targets base root URL to bypass 405 error anomalies
   const cloudGatewayUrl = 'https://onrender.com';
 
   if (currentTimeoutTtl <= 0) return;
@@ -38,7 +38,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  // Dispatch secure verification payload packet to clear all tracking nodes
   fetch(cloudGatewayUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -66,7 +65,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
         logSummary.innerHTML = "<strong>FLOW COMPLIANT</strong>";
       }
       
-      // Clear out the console text and stream the live verified network status strings
       if (ledgerLogs) {
         ledgerLogs.innerText = `[✓] CLIENT_EXTENSION ➔ ACTIVE (mTLS 1.3)\n`;
         ledgerLogs.innerText += `[✓] SECURE_VAULT_GATEWAY ➔ AUTHORIZED\n`;
@@ -76,7 +74,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
         ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Injecting into checkout inputs...`;
       }
 
-      // Convey automated instructions down into content.js running on web context
       chrome.tabs.sendMessage(activeTab.id, { 
         action: "START_AUTO_CHECKOUT", 
         tokenData: pipelineRoutingToken,
@@ -84,7 +81,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       }, (pipelineFeedback) => {
         if (!chrome.runtime.lastError && pipelineFeedback) {
           if (ledgerLogs) ledgerLogs.innerText += `\n> Automation State: ${pipelineFeedback.status}`;
-          setTimeout(() => { window.close(); }, 4000); // 4-second pause to let the user audit status lines
+          setTimeout(() => { window.close(); }, 4000);
         }
       });
     }
@@ -95,11 +92,10 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       logSummary.innerHTML = '<strong>ROUTING RUNTIME ERROR</strong>';
     }
     if (ledgerLogs) {
-      // In case the cloud container is booting, output audit paths to assist tracking
       ledgerLogs.innerText = `[✖] VAULT_GATEWAY: ERROR_TIMEOUT_OR_SPINDOWN\n`;
       ledgerLogs.innerText += `[!] TARGET ENDPOINT: ${cloudGatewayUrl}\n`;
       ledgerLogs.innerText += `> Notice: Verify if Render web container is active and try again.`;
     }
-    console.error("[FWO Audit Exception Handled]", err);
+    console.error(err);
   });
 });
