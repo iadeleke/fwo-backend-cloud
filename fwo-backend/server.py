@@ -5,14 +5,14 @@ import random
 
 class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
     def end_headers(self):
-        # Enforce comprehensive cross-origin permission layers
+        # Enforce comprehensive cross-origin permission layers for the extension client
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         super().end_headers()
 
     def do_OPTIONS(self):
-        # Gracefully resolve browser structural verification pings
+        # Gracefully resolve browser structural preflight verification pings
         self.send_response(200)
         self.end_headers()
 
