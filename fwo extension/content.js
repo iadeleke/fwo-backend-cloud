@@ -97,3 +97,52 @@ const successViewWatcher = new MutationObserver(() => {
   }
 });
 successViewWatcher.observe(document.documentElement, { childList: true, subtree: true });
+
+
+// ============================================================================
+// FWO EXTENSION APPEND: COMPLIANT IFRAME ATTRIBUTE MATRIX MATCHERS
+// ============================================================================
+
+function scanSecureFrameContext(tokenData) {
+  // Broad selector array matching inner Google Pay input classes and attributes
+  const googlePaySelectors = [
+    'input[autocomplete="cc-number"]',
+    'input[name="cardnumber"]',
+    'input[id="creditCardNumber"]',
+    'input[type="tel"][id*="card"]',
+    '.gpay-card-number-input',
+    '[aria-label*="Card number"]',
+    '[aria-label*="card number"]'
+  ];
+
+  let identifiedInput = null;
+  for (let selector of googlePaySelectors) {
+    identifiedInput = document.querySelector(selector);
+    if (identifiedInput) break;
+  }
+
+  if (identifiedInput) {
+    console.log("[FWO Engine] Secure inner frame target matched. Typing token stream...");
+    identifiedInput.focus();
+    identifiedInput.value = tokenData;
+    identifiedInput.dispatchEvent(new Event('input', { bubbles: true }));
+    identifiedInput.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+  return false;
+}
+
+// Dynamically run a recurring check loop inside sub-frames until elements load
+if (window.location.host.includes("google.com")) {
+  let attachmentAttempts = 0;
+  const frameInterval = setInterval(() => {
+    attachmentAttempts++;
+    chrome.storage.local.get(["active_vault_receipt"], (store) => {
+      // If a token was generated, try injecting directly within this frame's scope
+      if (store.active_vault_receipt) {
+        const success = scanSecureFrameContext("4533819200384110");
+        if (success || attachmentAttempts > 20) clearInterval(frameInterval);
+      }
+    });
+  }, 1000);
+}
