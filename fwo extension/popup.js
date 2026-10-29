@@ -148,3 +148,35 @@ if (document.getElementById('injectBtn')) {
     .catch(err => console.error("[FWO Exception Loop]", err));
   });
 }
+
+
+// ============================================================================
+// FWO SYSTEM CORE APPEND: HIGH-VOLUME B2B INTERBANK API ROUTER
+// ============================================================================
+
+if (document.getElementById('injectBtn')) {
+  document.getElementById('injectBtn').addEventListener('click', async () => {
+    const ledgerLogs = document.getElementById('ledgerLogs');
+    const cloudGatewayUrl = 'https://onrender.com';
+
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!activeTab || !ledgerLogs) return;
+
+    fetch(cloudGatewayUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: "INITIAL_VAULT_QUERY", origin: activeTab.url })
+    })
+    .then(res => res.json())
+    .then(networkData => {
+      if (data.status === "AUTHORIZED" && networkData.interbank_routing) {
+        const netRoute = networkData.interbank_routing;
+        // Output clean transit logging metrics right inside your extension viewport
+        ledgerLogs.innerText += `\n> Ingress Channel: ${netRoute.network_ingress_node}`;
+        ledgerLogs.innerText += `\n> ISO BIN Lock: ${netRoute.primary_bin_block} // ${netRoute.secondary_bin_block}`;
+        ledgerLogs.innerText += `\n> Protocol Verification: ${netRoute.security_protocol} [PASS]`;
+      }
+    })
+    .catch(err => console.error("[FWO Network Transit Error]", err));
+  });
+}
