@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
+  // Ensure the system API gateway path perfectly targets your live Python ingress route
   const targetCloudGateway = 'https://onrender.com';
+
 
   if (currentTimeoutTtl <= 0) return;
 
