@@ -64,9 +64,11 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
           action: "START_AUTO_CHECKOUT", 
           tokenData: pipelineRoutingToken,
           vaultReceipt: vaultReceipt
-        }, () => {
-          // Suppress errors if the tab is reloaded or out of context
+        }, (pipelineFeedback) => {
           if (chrome.runtime.lastError) { return; }
+          if (pipelineFeedback && ledgerLogs) {
+            ledgerLogs.innerText += `\n> Page Execution Status: ${pipelineFeedback.status}`;
+          }
           setTimeout(() => { window.close(); }, 3500);
         });
       });
