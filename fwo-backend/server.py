@@ -17,7 +17,7 @@ class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        # Broad path map array to smoothly catch root path updates from your popup configuration
+        # Catch all incoming variations of your ingress gateway routes safely
         if self.path in ["/", "/ingress", "/ingress/"]:
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
