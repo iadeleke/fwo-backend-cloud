@@ -1,51 +1,60 @@
+// Global execution listener catching orders from the popup core
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "START_AUTO_CHECKOUT") {
-    console.log("[FWO Core] Target received. Running stealth typing matrix...");
+    console.log("[FWO Core] Trigger heard. Waiting for form elements...");
     
-    const targetInput = document.querySelector('input[autocomplete="cc-number"], input[name*="card"], [id*="card-number"], input[name*="ccnum"]');
-    const targetSubmit = document.querySelector('button[type="submit"], [class*="pay"], #place-order, .g-button');
+    const runTypingAutomation = () => {
+      const targetInput = document.querySelector('input[autocomplete="cc-number"], input[name*="card"], [id*="card-number"], input[name*="ccnum"]');
+      const targetSubmit = document.querySelector('button[type="submit"], [class*="pay"], #place-order, .g-button');
 
-    if (targetInput) {
-      targetInput.focus();
-      targetInput.style.border = "3px solid #2b8a3e";
+      if (targetInput) {
+        targetInput.focus();
+        targetInput.style.border = "3px solid #2b8a3e";
 
-      let index = 0;
-      targetInput.value = "";
-      
-      function typeStream() {
-        if (index < request.tokenData.length) {
-          let char = request.tokenData.charAt(index);
-          targetInput.value += char;
-          
-          targetInput.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
-          targetInput.dispatchEvent(new Event('input', { bubbles: true }));
-          targetInput.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
-          
-          index++;
-          setTimeout(typeStream, Math.floor(Math.random() * 30 + 50));
-        } else {
-          targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-          console.log("[FWO Core] Token input complete.");
-          
-          if (targetSubmit) {
-            setTimeout(() => {
-              targetSubmit.style.border = "3px dashed #2b8a3e";
-              targetSubmit.click();
-              sendResponse({ status: "STEALTH_FLOW_SUBMITTED" });
-            }, 800);
+        let index = 0;
+        targetInput.value = "";
+        
+        function typeStream() {
+          if (index < request.tokenData.length) {
+            let char = request.tokenData.charAt(index);
+            targetInput.value += char;
+            
+            targetInput.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+            targetInput.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+            
+            index++;
+            setTimeout(typeStream, Math.floor(Math.random() * 30 + 50));
           } else {
-            sendResponse({ status: "TOKENS_FILLED_AWAITING_CLICK" });
+            targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            if (targetSubmit) {
+              setTimeout(() => {
+                targetSubmit.style.border = "3px dashed #2b8a3e";
+                targetSubmit.click();
+                sendResponse({ status: "STEALTH_FLOW_SUBMITTED" });
+              }, 800);
+            } else {
+              sendResponse({ status: "TOKENS_FILLED_AWAITING_CLICK" });
+            }
           }
         }
+        typeStream();
+      } else {
+        sendResponse({ status: "TARGET_INPUTS_NOT_FOUND_IN_FRAME" });
       }
-      typeStream();
+    };
+
+    if (document.body) {
+      runTypingAutomation();
     } else {
-      sendResponse({ status: "TARGET_INPUTS_NOT_FOUND_IN_FRAME" });
+      document.addEventListener("DOMContentLoaded", runTypingAutomation);
     }
     return true;
   }
 });
 
+// FIXED: Target 'document.documentElement' instead of 'document.body' to safely support 'document_start'
 const successViewWatcher = new MutationObserver(() => {
   const path = window.location.href.toLowerCase();
   if (path.includes("receipt") || path.includes("success") || path.includes("confirmation")) {
@@ -89,4 +98,4 @@ const successViewWatcher = new MutationObserver(() => {
     });
   }
 });
-successViewWatcher.observe(document.body, { childList: true, subtree: true });
+successViewWatcher.observe(document.documentElement, { childList: true, subtree: true });
