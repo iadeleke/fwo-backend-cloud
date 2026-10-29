@@ -89,3 +89,68 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
     console.error("[FWO Context Exception Handled]", err);
   });
 });
+
+
+
+// ============================================================================
+// FWO LIVE PRODUCTION APPEND: ENTERPRISE LIVE TRANSACTION CONTROLLER
+// ============================================================================
+
+if (document.getElementById('injectBtn')) {
+  document.getElementById('injectBtn').addEventListener('click', async () => {
+    const logSummary = document.getElementById('logSummary');
+    const ledgerLogs = document.getElementById('ledgerLogs');
+    const liveProductionGate = 'https://onrender.com';
+
+    if (logSummary) logSummary.innerHTML = "<strong>CONNECTING LIVE...</strong>";
+    if (ledgerLogs) ledgerLogs.innerText += '\n> Requesting live production tokens via FAPI 2.0 network rails...';
+
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!activeTab) return;
+
+    fetch(liveProductionGate, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        action: "INITIAL_VAULT_QUERY", 
+        origin: activeTab.url,
+        environment: "PRODUCTION_LIVE" // Instruct the backend to use the active production reserve
+      })
+    })
+    .then(res => res.json())
+    .then(prodData => {
+      if (prodData.status === "AUTHORIZED") {
+        clearInterval(expirationCountdownTimer);
+        
+        const liveToken = prodData.iso_bin_routing_token;
+        const liveReceipt = prodData.vault_receipt;
+        const netRoute = prodData.interbank_routing;
+
+        chrome.storage.local.set({ "active_vault_receipt": liveReceipt });
+
+        if (logSummary) logSummary.innerHTML = "<strong>PROD LAYER ACTIVE</strong>";
+        if (ledgerLogs) {
+          ledgerLogs.innerText += `\n[LIVE] Connected to Ingress Node: ${netRoute.network_ingress_node}`;
+          ledgerLogs.innerText += `\n[LIVE] Passing ISO BIN Token Block: ${netRoute.primary_bin_block}`;
+          ledgerLogs.innerText += `\n[LIVE] Routing transaction payload directly to Google Pay production container...`;
+        }
+
+        // Pass the live data structures down into content.js to trigger the native browser handshake
+        chrome.tabs.sendMessage(activeTab.id, { 
+          action: "START_PRODUCTION_CHECKOUT", 
+          tokenData: liveToken,
+          vaultReceipt: liveReceipt,
+          interbankRouting: netRoute
+        }, (feedback) => {
+          if (!chrome.runtime.lastError && feedback) {
+            if (ledgerLogs) ledgerLogs.innerText += `\n[LIVE] Google Pay Response: ${feedback.status}`;
+            setTimeout(() => { window.close(); }, 2000);
+          }
+        });
+      }
+    })
+    .catch(err => {
+      if (logSummary) { logSummary.style.color = '#c92a2a'; logSummary.innerText = 'PROD ROUTE FAILED'; }
+    });
+  });
+}
