@@ -1,22 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <style>
-        body { width: 320px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; margin: 0; background: #fafafa; }
-        .card { background: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); border: 1px solid #eef2f5; }
-        h3 { margin-top: 0; color: #1a1f36; font-size: 15px; font-weight: 600; border-bottom: 2px solid #635bff; padding-bottom: 6px; }
-        button { background: #635bff; color: #ffffff; border: none; padding: 10px 14px; width: 100%; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        button:hover { background: #4b44d1; }
-        #statusDisplay { margin-top: 12px; font-size: 12px; padding: 10px; border-radius: 6px; background: #f7fafc; color: #4a5568; border: 1px solid #edf2f7; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
-    </style>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background-color: #f8f9fa;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 16px;
+    }
+    .header {
+      font-size: 16px;
+      font-weight: 700;
+      color: #212529;
+      border-bottom: 2px solid #5c7cfa;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .btn {
+      width: 100%;
+      background-color: #5c7cfa;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background-color: #4c6ef5; }
+    .status-box {
+      margin-top: 12px;
+      background: #f1f3f5;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #495057;
+      word-break: break-all;
+    }
+    .ledger-logs {
+      margin-top: 12px;
+      font-size: 11px;
+      max-height: 80px;
+      overflow-y: auto;
+      background: #343a40;
+      color: #a6a7ab;
+      padding: 6px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-    <div class="card">
-        <h3>FWO Ledger Link Engine</h3>
-        <button id="forceTokenInjectBtn">Force Token Injection</button>
-        <div id="statusDisplay">Status: IDLE_WAITING</div>
-    </div>
-    <script src="popup.js"></script>
+  <div class="card">
+    <div class="header">FWO Ledger Link Engine</div>
+    <button id="injectBtn" class="btn">Force Token Injection</button>
+    <div id="logSummary" class="status-box">Status: IDLE_WAITING</div>
+    <div class="ledger-logs" id="ledgerLogs">> Initializing secure edge runtime context...</div>
+  </div>
 </body>
 </html>
