@@ -16,15 +16,17 @@ class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-    def do_POST(self):
-        if self.path == "/ingress":
-            content_length = int(self.headers.get('Content-Length', 0))
-            post_data = self.rfile.read(content_length)
-            payload = json.loads(post_data.decode('utf-8'))
-            
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
+        def do_POST(self):
+        # Flexible route selection array to catch incoming client execution calls smoothly
+            if self.path in ["/ingress", "/ingress/", "/"]:
+                content_length = int(self.headers.get('Content-Length', 0))
+                post_data = self.rfile.read(content_length)
+                payload = json.loads(post_data.decode('utf-8'))
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+
 
             # STAGE 1: Process initial extension vault validation request
             if payload.get("action") == "INITIAL_VAULT_QUERY":
