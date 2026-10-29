@@ -55,6 +55,32 @@ class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
                     }
                 else:
                     response = {"status": "ERROR", "message": "Incomplete verification fields"}
+            
+# ============================================================================
+# FWO BACKEND APPEND: SECURE CONFLICT RESOLUTION ROUTING LOGIC
+# ============================================================================
+
+            # Place this block directly within your active do_POST routing check handles
+            elif payload.get("action") == "CLOSE_OUT_TRANSACTION":
+                vault_rec_verify = payload.get("vault_receipt")
+                gateway_rec_verify = payload.get("gateway_receipt")
+                
+                if vault_rec_verify and gateway_rec_verify:
+                    generated_consensus_id = f"FWO-CNS-LOG-{random.randint(1000000, 9999999)}"
+                    response = {
+                        "status": "SETTLED",
+                        "compliance_receipt": {
+                            "consensus_id": generated_consensus_id,
+                            "vault_verification": vault_rec_verify,
+                            "merchant_verification": gateway_rec_verify,
+                            "database_log_status": "CLOSED_SUCCESS"
+                        }
+                    }
+                else:
+                    response = {"status": "ERROR", "message": "Incomplete multi-node verification tracking payload flags"}
+
+
+            
             else:
                 response = {"status": "UNKNOWN_ACTION"}
 
