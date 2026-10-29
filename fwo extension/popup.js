@@ -28,7 +28,8 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const ledgerLogs = document.getElementById('ledgerLogs');
   
   // FIXED: Targets base root URL with trailing slash to bypass 405 error anomalies
-  const cloudGatewayUrl = 'https://onrender.com';
+  const cloudGatewayUrl = 'https://fwo-backend-cloud.onrender.com/';
+
 
   if (currentTimeoutTtl <= 0) return;
 
