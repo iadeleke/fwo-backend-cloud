@@ -2,7 +2,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   logSummary.style.display = 'block';
   logSummary.style.color = '#0056b3';
-  logSummary.innerText = 'Querying Vault via HTTPS...';
+  logSummary.innerText = 'Querying Cloud Vault via HTTPS...';
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
@@ -24,8 +24,8 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
     if (!results || !results[0]) return;
     const checkoutContext = results[0].result;
 
-    // Direct routing match to your Python server's /ingress handler path
-    fetch('https://localhost:8080/ingress', {
+    // Production routing match pointed to your live Render serverless gateway infrastructure
+    fetch('https://onrender.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -45,8 +45,8 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
     })
     .catch((err) => {
       logSummary.style.color = '#c92a2a';
-      logSummary.innerText = 'ROUTING ERROR: Check if server is running on https://localhost:8080/ingress';
-      console.error("[FWO Fetch Error]", err);
+      logSummary.innerText = 'ROUTING ERROR: Cloud gateway service is unavailable or port mapping failed.';
+      console.error("[FWO Cloud Fetch Error]", err);
     });
   });
 });
