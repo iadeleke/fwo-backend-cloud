@@ -1,4 +1,3 @@
-// Global execution listener catching orders from the popup core
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "START_AUTO_CHECKOUT") {
     console.log("[FWO Core] Trigger heard. Waiting for form elements...");
@@ -54,7 +53,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// FIXED: Target 'document.documentElement' instead of 'document.body' to safely support 'document_start'
 const successViewWatcher = new MutationObserver(() => {
   const path = window.location.href.toLowerCase();
   if (path.includes("receipt") || path.includes("success") || path.includes("confirmation")) {
