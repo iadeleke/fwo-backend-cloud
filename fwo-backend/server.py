@@ -16,9 +16,9 @@ class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-    def do_POST(self):
-        # Catch all incoming variations of your ingress gateway routes safely
-        if self.path in ["/ingress", "/ingress/", "/"]:
+        def do_POST(self):
+        # Broad path map array to smoothly catch root path updates from your popup configuration
+        if self.path in ["/", "/ingress", "/ingress/"]:
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
             payload = json.loads(post_data.decode('utf-8'))
@@ -26,6 +26,7 @@ class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
+
 
             # STAGE 1: Process multi-node ping verifications and release funds
             if payload.get("action") == "INITIAL_VAULT_QUERY":
