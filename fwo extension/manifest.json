@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Finance Wallet Onboarding (FWO) Link",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Enterprise W3C Payment Handler and Live Google Pay Production Token Pass-Through Engine.",
   "permissions": [
     "scripting",
@@ -11,15 +11,14 @@
     "clipboardRead"
   ],
   "host_permissions": [
-    "https://*://*",
-    "https://payments://*",
-    "https://pay://*"
+    "https://*://",
+    "https://payments://",
+    "https://pay://"
   ],
   "content_scripts": [
     {
       "matches": [
         "https://*://*",
-        "https://payments://*",
         "https://pay://*"
       ],
       "js": ["content.js"],
