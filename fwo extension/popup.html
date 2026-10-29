@@ -5,19 +5,21 @@
   <style>
     body { width: 320px; font-family: system-ui, sans-serif; margin: 0; padding: 16px; background-color: #f8f9fa; }
     .card { background: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; }
-    .header { font-size: 16px; font-weight: 700; color: #212529; border-bottom: 2px solid #5c7cfa; padding-bottom: 8px; margin-bottom: 12px; }
-    .btn { width: 100%; background-color: #5c7cfa; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-    .btn:hover { opacity: 0.9; }
-    .status-box { margin-top: 12px; background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 12px; color: #495057; }
-    .ledger-logs { margin-top: 12px; font-size: 11px; max-height: 90px; overflow-y: auto; background: #343a40; color: #a6a7ab; padding: 6px; border-radius: 4px; white-space: pre-wrap; }
+    .header { font-size: 15px; font-weight: 700; color: #212529; border-bottom: 2px solid #2b8a3e; padding-bottom: 8px; margin-bottom: 12px; text-align: center; }
+    .btn-auto { width: 100%; background-color: #2b8a3e; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-auto:hover { background-color: #237032; }
+    .status-box { margin-top: 12px; background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 12px; color: #495057; text-align: center; }
+    .ledger-logs { margin-top: 12px; font-size: 11px; max-height: 90px; overflow-y: auto; background: #343a40; color: #a6a7ab; padding: 6px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+    .sso-badge { font-size: 10px; font-weight: 700; background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 4px; display: block; margin-top: 10px; border: 1px solid #bbdefb; text-align: center; text-transform: uppercase; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="header">FWO Orchestration Core</div>
-    <button id="injectBtn" class="btn">Force Token Injection</button>
-    <div id="logSummary" class="status-box">Status: IDLE_WAITING</div>
-    <div class="ledger-logs" id="ledgerLogs">> Initializing secure edge runtime...</div>
+    <div class="header">💸 FWO Autopilot Checkout Engine</div>
+    <button id="injectBtn" class="btn-auto">Pay with FWO Vault Account</button>
+    <div id="logSummary" class="status-box">Status: READY_IDLE</div>
+    <div id="ssoVerificationStatus" class="sso-badge">SAML/SSO: IDENTITY_VERIFIED (I.A. Adeleke)</div>
+    <div class="ledger-logs" id="ledgerLogs">> System standing by for checkout verification initialization...</div>
   </div>
   <script src="popup.js"></script>
 </body>
