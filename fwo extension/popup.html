@@ -14,8 +14,10 @@
     .badge-monthly { background: #fff4e6; color: #f59f00; border: 1px solid #ffe3b3; }
     .btn-auto { width: 100%; background-color: #2b8a3e; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-auto:hover { background-color: #237032; }
-    .status-box { margin-top: 10px; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; color: #2b8a3e; text-align: center; }
-    .ledger-logs { margin-top: 10px; font-size: 11px; max-height: 100px; overflow-y: auto; background: #343a40; color: #a6a7ab; padding: 6px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+    .status-box { margin-top: 10px; background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; color: #495057; text-align: center; }
+    
+    /* Expanded Terminal Console Output Window */
+    .ledger-logs { margin-top: 10px; font-size: 11px; max-height: 140px; height: 140px; overflow-y: auto; background: #212529; color: #f8f9fa; padding: 10px; border-radius: 6px; white-space: pre-wrap; font-family: monospace; line-height: 1.4; border: 1px solid #343a40; }
   </style>
 </head>
 <body>
@@ -40,8 +42,8 @@
       </div>
     </div>
     <button id="injectBtn" class="btn-auto">Pay with FWO Vault Account</button>
-    <div id="logSummary" class="status-box">Status: READY_CONNECTED</div>
-    <div class="ledger-logs" id="ledgerLogs">> Pipeline standing by for production verification...</div>
+    <div id="logSummary" class="status-box">Status: READY_IDLE</div>
+    <div class="ledger-logs" id="ledgerLogs">> System standing by for multi-stage gateway audit...</div>
   </div>
   <script src="popup.js"></script>
 </body>
