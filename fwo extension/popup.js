@@ -1,127 +1,86 @@
+let currentTimeoutTtl = 45; // Strict system network threshold lifetime parameter
+let expirationCountdownTimer = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const logSummary = document.getElementById('logSummary');
+  const ledgerLogs = document.getElementById('ledgerLogs');
+  
+  if (logSummary) {
+    logSummary.style.color = '#2b8a3e';
+    logSummary.style.backgroundColor = '#e8f5e9';
+    logSummary.style.borderColor = '#c8e6c9';
+    logSummary.innerHTML = `Status: CLOUD_CONNECTED | TTL: ${currentTimeoutTtl}s`;
+  }
+
+  // 1. Initialize active countdown processing loop
+  expirationCountdownTimer = setInterval(() => {
+    currentTimeoutTtl--;
+    if (currentTimeoutTtl <= 0) {
+      clearInterval(expirationCountdownTimer);
+      if (logSummary) {
+        logSummary.style.color = '#c92a2a';
+        logSummary.style.backgroundColor = '#fff5f5';
+        logSummary.style.borderColor = '#ffc9c9';
+        logSummary.innerHTML = "<strong>CRITICAL TIMEOUT: SERVICE SUSPENDED</strong>";
+      }
+      if (ledgerLogs) ledgerLogs.innerText += '\n> [TIMEOUT] Connection dropped. Re-authenticate to refresh context.';
+      document.getElementById('injectBtn').disabled = true;
+      document.getElementById('injectBtn').style.backgroundColor = '#ced4da';
+    } else {
+      if (logSummary) logSummary.innerHTML = `Status: CLOUD_CONNECTED | TTL: ${currentTimeoutTtl}s`;
+    }
+  }, 1000);
+});
+
 document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
   const targetCloudGateway = 'https://onrender.com';
 
-  logSummary.style.color = '#0056b3';
-  logSummary.innerText = 'Initializing Autopilot...';
-  ledgerLogs.innerText = '> Querying Render Cloud Core layers...';
+  if (currentTimeoutTtl <= 0) return;
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return;
+  if (logSummary) logSummary.innerText = 'Orchestrating...';
+  if (ledgerLogs) ledgerLogs.innerText += '\n> Running multi-stage system evaluation checks...';
 
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!activeTab) return;
+
+  // 2. Transmit initial payload containing structural parameters to Render Cloud Core
   fetch(targetCloudGateway, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: "INITIAL_VAULT_QUERY", origin: tab.url })
+    body: JSON.stringify({ 
+      action: "INITIAL_VAULT_QUERY", 
+      origin: activeTab.url,
+      pricing_matrix: { one_time_cost: "1848.99", recurring_cost: "77.00", currency: "USD" }
+    })
   })
   .then(res => res.json())
   .then(data => {
     if (data.status === "AUTHORIZED") {
-      const targetToken = data.iso_bin_routing_token;
-      const vaultReceiptCode = data.vault_receipt;
+      clearInterval(expirationCountdownTimer); // Clear ticker memory upon secure token retrieval
+      const pipelineRoutingToken = data.iso_bin_routing_token;
+      const vaultReceipt = data.vault_receipt;
 
-      // Cache Vault Receipt 1 safely to cross-verify late transaction logs
-      chrome.storage.local.set({ "active_vault_receipt": vaultReceiptCode });
+      chrome.storage.local.set({ "active_vault_receipt": vaultReceipt });
 
-      logSummary.style.color = '#2b8a3e';
-      logSummary.innerHTML = "<strong>AUTOMATION ACTIVE</strong>";
-      ledgerLogs.innerText += `\n> Reserved Funds Receipt: ${vaultReceiptCode}\n> Taking control of merchant checkout frames...`;
+      if (logSummary) logSummary.innerHTML = "<strong>AUTOMATION ACTIVE</strong>";
+      if (ledgerLogs) ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Taking control of payment gateway frames...`;
 
-      chrome.tabs.sendMessage(tab.id, { action: "START_AUTO_CHECKOUT", tokenData: targetToken }, (response) => {
-        if (chrome.runtime.lastError) {
-          ledgerLogs.innerText += "\n> Error initializing pipeline on this frame view.";
-          return;
-        }
-        if (response) {
-          ledgerLogs.innerText += `\n> Engine Pipeline Status: ${response.status}`;
+      // 3. Dispatch execution variables down into content.js running in webpage context
+      chrome.tabs.sendMessage(activeTab.id, { 
+        action: "EXECUTE_ENTERPRISE_PIPELINE", 
+        tokenData: pipelineRoutingToken,
+        vaultReceipt: vaultReceipt
+      }, (response) => {
+        if (!chrome.runtime.lastError && response) {
+          if (ledgerLogs) ledgerLogs.innerText += `\n> Pipeline Sync: ${response.status}`;
           setTimeout(() => { window.close(); }, 1200);
         }
       });
     }
   })
   .catch(err => {
-    logSummary.style.color = '#c92a2a';
-    logSummary.innerText = 'GATEWAY ERROR: Retry build.';
+    if (logSummary) { logSummary.style.color = '#c92a2a'; logSummary.innerText = 'ROUTING EXCEPTION'; }
   });
 });
-
-
-// ============================================================================
-// FWO CONTEXTUAL EXTENSION APPEND: DYNAMIC DOMAIN VERIFICATION AGENT
-// ============================================================================
-
-// Intercept window tracking metrics on interface activation loops
-document.addEventListener('DOMContentLoaded', async () => {
-  const ledgerLogs = document.getElementById('ledgerLogs');
-  
-  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!activeTab || !ledgerLogs) return;
-
-  try {
-    const formattedUrl = new URL(activeTab.url);
-    const checkoutHost = formattedUrl.hostname;
-
-    // Display the actively matched checkout portal inside your terminal console panel
-    ledgerLogs.innerText += `\n> Target Portal Detected: https://${checkoutHost}`;
-    ledgerLogs.innerText += `\n> Context Locked: Standing by to authorize transaction...`;
-  } catch (urlException) {
-    ledgerLogs.innerText += `\n> Warning: Out-of-bounds webview protocol detected.`;
-  }
-});
-
-
-
-// ============================================================================
-// FWO CONTEXTUAL CORE ENHANCEMENT: ENTERPRISE INTERACTION CONTROLLER INTERFACE
-// ============================================================================
-
-if (document.getElementById('injectBtn')) {
-  document.getElementById('injectBtn').addEventListener('click', async () => {
-    const logSummary = document.getElementById('logSummary');
-    const ledgerLogs = document.getElementById('ledgerLogs');
-    const targetCloudInboundGate = 'https://onrender.com';
-
-    if (logSummary) logSummary.innerText = 'Orchestrating...';
-    if (ledgerLogs) ledgerLogs.innerText += '\n> Running multi-stage system evaluation checks over cloud infrastructure...';
-
-    const [focusedTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!focusedTab) return;
-
-    // Securely pull transactional clearance payload structures down from your active Render container
-    fetch(targetCloudInboundGate, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: "INITIAL_VAULT_QUERY", origin: focusedTab.url })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === "AUTHORIZED") {
-        const pipelineRoutingToken = data.iso_bin_routing_token;
-        const generatedVaultReceiptCode = data.vault_receipt;
-
-        // Securely cache Receipt 1 into browser thread parameters
-        chrome.storage.local.set({ "active_vault_receipt": generatedVaultReceiptCode });
-
-        if (logSummary) logSummary.innerHTML = "<strong>CORE AGENT ACTIVE</strong>";
-        if (ledgerLogs) ledgerLogs.innerText += `\n> Assigned Vault Code: ${generatedVaultReceiptCode}\n> Dispatching token variables to frame interaction nodes...`;
-
-        // Pass cross-process messaging block down into content.js to trigger automation
-        chrome.tabs.sendMessage(focusedTab.id, { 
-          action: "EXECUTE_ENTERPRISE_PIPELINE", 
-          tokenData: pipelineRoutingToken,
-          vaultReceipt: generatedVaultReceiptCode
-        }, (pipelineResponse) => {
-          if (!chrome.runtime.lastError && pipelineResponse) {
-            if (ledgerLogs) ledgerLogs.innerText += `\n> Engine Pipeline Verification: ${pipelineResponse.status}`;
-            // Automatically close the popout panel workspace since the content machine owns execution control
-            setTimeout(() => { window.close(); }, 1500);
-          }
-        });
-      }
-    })
-    .catch(err => {
-      if (logSummary) { logSummary.style.color = '#c92a2a'; logSummary.innerText = 'ROUTING EXCEPTION'; }
-    });
-  });
-}
