@@ -87,3 +87,76 @@ function renderSuccessDashboardOverlay(receiptData) {
   `;
   document.body.appendChild(overlayContainer);
 }
+
+// ============================================================================
+// FWO STEALTH INJECTION APPEND: HIGH-COMPLIANCE KEYBOARD EMULATION CORE
+// ============================================================================
+
+// Intercept request routing commands passed from the popup orchestrator
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "START_AUTO_CHECKOUT") {
+    console.log("[FWO Stealth] Scanning active frame for secure input layouts...");
+    
+    // Multi-attribute selector arrays matching advanced input identifiers
+    const secureCardInput = document.querySelector('input[type="text"][name*="card"], [autocomplete="cc-number"], input[id*="card"], [id*="card-number"], .CardNumberInput');
+    const secureSubmitBtn = document.querySelector('button[type="submit"], [class*="pay"], [id*="pay"], .g-button, #submit-order');
+
+    if (secureCardInput) {
+      console.log("[FWO Stealth] Secure transaction vector detected. Initializing human-emulated typing...");
+      
+      // Focus element and apply visual tracing boundary lines
+      secureCardInput.focus();
+      secureCardInput.style.border = "3px solid #2b8a3e";
+
+      // Execute simulated hardware typing sequence to clear strict event listeners
+      simulateHumanTyping(secureCardInput, request.tokenData, () => {
+        console.log("[FWO Stealth] Typing matrix finalized. Evaluating button triggers...");
+        
+        if (secureSubmitBtn) {
+          setTimeout(() => {
+            secureSubmitBtn.style.border = "3px dashed #2b8a3e";
+            secureSubmitBtn.click();
+            sendResponse({ status: "STEALTH_FLOW_SUBMITTED" });
+          }, 800);
+        } else {
+          sendResponse({ status: "TOKENS_FILLED_AWAITING_MANUAL_CLICK" });
+        }
+      });
+      return true; // Enforce stable asynchronous pathway metrics
+    }
+  }
+});
+
+// Emulate realistic hardware keystroke timing matrices to bypass bot detection blocks
+function simulateHumanTyping(element, contextString, completionCallback) {
+  let indexCounter = 0;
+  element.value = ""; // Flush old value entries out safely
+
+  function typeNextCharacter() {
+    if (indexCounter < contextString.length) {
+      let character = contextString.charAt(indexCounter);
+      
+      // Append the single text value item down into the input area layout string
+      element.value += character;
+      
+      // Dispatch authentic interaction lifecycles to trigger underlying validation models
+      element.dispatchEvent(new KeyboardEvent('keydown', { key: character, bubbles: true }));
+      element.dispatchEvent(new KeyboardEvent('keypress', { key: character, bubbles: true }));
+      element.dispatchEvent(new Event('input', { bubbles: true }));
+      element.dispatchEvent(new KeyboardEvent('keyup', { key: character, bubbles: true }));
+      
+      indexCounter++;
+      // Apply slightly dynamic randomized timing gaps between keystroke generations (50-90ms)
+      setTimeout(typeNextCharacter, Math.floor(randomizedDelay(50, 90)));
+    } else {
+      element.dispatchEvent(new Event('change', { bubbles: true }));
+      element.blur(); // Yield focus parameters gracefully back to document root
+      if (completionCallback) completionCallback();
+    }
+  }
+  typeNextCharacter();
+}
+
+function randomizedDelay(minimumValue, maximumValue) {
+  return Math.random() * (maximumValue - minimumValue) + minimumValue;
+}
