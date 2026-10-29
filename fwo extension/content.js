@@ -354,3 +354,40 @@ const globalOrchestrationObserver = new MutationObserver(() => {
   }
 });
 globalOrchestrationObserver.observe(document.body, { childList: true, subtree: true });
+
+
+
+// ============================================================================
+// FWO SYSTEM CORE APPEND: AUTOMATED SCHEDULED CHECKOUT INJECTION LOOP
+// ============================================================================
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "START_SCHEDULED_AUTO_CHECKOUT") {
+    console.log("[FWO Automation] Ingesting scheduled agreement metadata parameters...");
+    
+    // Evaluate browser viewport map for target form input components
+    const ccField = document.querySelector('input[autocomplete="cc-number"], input[name*="card"], [id*="card-number"]');
+    const actionSubmitTarget = document.querySelector('.continue-button, button[type="submit"], #continue, .g-button');
+
+    if (ccField) {
+      ccField.focus();
+      ccField.value = request.tokenData;
+      ccField.dispatchEvent(new Event('input', { bubbles: true }));
+      ccField.style.border = "3px dashed #2b8a3e";
+
+      console.log("[FWO Automation] Token successfully mapped. Simulating form advancement submission...");
+      
+      if (actionSubmitTarget) {
+        setTimeout(() => {
+          actionSubmitTarget.click();
+          sendResponse({ status: "VAULT_RELEASE_SUCCESS_FORM_SUBMITTED" });
+        }, 1200);
+      } else {
+        sendResponse({ status: "TOKENS_FILLED_AWAITING_MANUAL_SETTLEMENT" });
+      }
+    } else {
+      sendResponse({ status: "TARGET_FORM_FIELDS_NOT_FOUND" });
+    }
+    return true;
+  }
+});
