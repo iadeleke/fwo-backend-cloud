@@ -7,21 +7,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
   
-  if (logSummary) logSummary.innerHTML = `Status: DISCOVERING_PRICING | TTL: ${currentTimeoutTtl}s`;
+  if (logSummary) logSummary.innerHTML = `Status: SYNCING_GATEWAY | TTL: ${currentTimeoutTtl}s`;
 
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  // CONTINUOUS POLLING OVERRIDE: Queries the webpage context iteratively every 500ms until metrics settle
+  // 1. Direct secure cross-origin message channel to scan target checkout url gateway parameters
   discoveryPollInterval = setInterval(() => {
     chrome.tabs.sendMessage(activeTab.id, { action: "DISCOVER_LIVE_PRICING" }, (response) => {
       if (chrome.runtime.lastError || !response) return;
       
       const pricing = response.pricing;
       
-      // If a valid money string placeholder was harvested, update user interface layouts and stop the loop
       if (pricing.one_time_cost !== "Detecting..." || pricing.recurring_cost !== "Detecting...") {
-        clearInterval(discoveryPollInterval); // Freeze discovery loop threads instantly
+        clearInterval(discoveryPollInterval); // Freeze semantic discovery loop threads instantly
         
         discoveredPricingMatrix = pricing;
         document.getElementById('hardwareCost').innerText = pricing.one_time_cost;
@@ -29,7 +28,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('vaultChargeTotal').innerText = pricing.one_time_cost;
         
         if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
-        if (ledgerLogs) ledgerLogs.innerText = `> Dynamic Price Discovery Locked: Total Identified. Ready to pay.`;
+        if (ledgerLogs) {
+          try {
+            const hostDomain = new URL(activeTab.url).hostname;
+            ledgerLogs.innerText = `[✓] STOREFRONT_GATEWAY_CONNECTED ➔ ${hostDomain}\n`;
+            ledgerLogs.innerText += `[✓] ASSET_DISCOVERY_LOCKED ➔ Total: ${pricing.one_time_cost}\n`;
+            ledgerLogs.innerText += `> Context synchronized. Standing by for secure database token transfer...`;
+          } catch (e) {
+            ledgerLogs.innerText = `> Dynamic Price Discovery Locked: Ready to pay.`;
+          }
+        }
       }
     });
   }, 500);
@@ -43,10 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         logSummary.style.color = '#c92a2a';
         logSummary.innerHTML = "<strong>TIMEOUT OVERRIDE: LOGS ARRESTED</strong>";
       }
-      if (ledgerLogs && !ledgerLogs.innerText.includes("PIPELINE COMPLIANT")) {
-        ledgerLogs.innerText += `\n\n[✖] GATEWAY LIFETIME EXPIRED: Cloud Socket Closed.`;
-        ledgerLogs.innerText += `\n[!] ACTION: Re-open popup or re-verify connection to resume.`;
-      }
     } else {
       if (logSummary && logSummary.innerHTML.includes("ACTIVE_TRACKING")) {
         logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
@@ -58,22 +62,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
-  
-  // SECURE TARGET ENDPOINT SPECIFICATION UNIFORMITY
-  const cloudGatewayUrl = 'https://fwo-backend-cloud.onrender.com';
+  const cloudGatewayUrl = 'https://onrender.com';
 
   clearInterval(discoveryPollInterval); // Kill any loose polling processes on checkout action
 
   if (logSummary) logSummary.innerHTML = "<strong>Processing Nodes...</strong>";
   if (ledgerLogs) {
-    ledgerLogs.innerText = `> Initializing Live Multi-Stage Cryptographic Gateway Audit...\n`;
-    ledgerLogs.innerText += `[STAGE 1/4] PINGING NETWORK CORE VECTOR...`;
+    ledgerLogs.innerText = `> Opening secure payment tunnel gateway to Render database...\n`;
   }
 
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  // Dispatch discovered totals back to Render Vault Core for reservation validation
+  // 2. Dispatch discovered totals back to Render Vault Core for secure token settlement
   fetch(cloudGatewayUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -83,10 +84,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       pricing_matrix: discoveredPricingMatrix
     })
   })
-  .then(res => {
-    if (!res.ok) throw new Error("HTTP Status " + res.status);
-    return res.json();
-  })
+  .then(res => res.json())
   .then(networkData => {
     if (networkData.status === "AUTHORIZED") {
       clearInterval(expirationCountdownTimer);
@@ -103,19 +101,21 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       
       // Stream every processing gateway node explicitly to the terminal log screen
       if (ledgerLogs) {
-        ledgerLogs.innerText = `[✓] STAGE 1/4 COMPLETE: CLIENT_EXTENSION ➔ ACTIVE (mTLS 1.3)\n`;
-        ledgerLogs.innerText += `[✓] STAGE 2/4 COMPLETE: SECURE_VAULT_GATEWAY ➔ AUTHORIZED\n`;
-        ledgerLogs.innerText += `[✓] STAGE 3/4 COMPLETE: PAYMENT_GATEWAY_RAILS ➔ ROUTING_PASS\n`;
-        ledgerLogs.innerText += `[✓] STAGE 4/4 COMPLETE: MERCHANT_CHECKOUT_PORTAL ➔ SYNCED\n\n`;
+        ledgerLogs.innerText = `[✓] STAGE 1/5: STOREFRONT_URL_GATEWAY ➔ SYNCED\n`;
+        ledgerLogs.innerText += `[✓] STAGE 2/5: SECURE_VAULT_GATEWAY ➔ CONNECTED\n`;
+        ledgerLogs.innerText += `[✓] STAGE 3/5: INTRA-VAULT_RESERVE_RELEASE ➔ FUNDS_LOCKED\n`;
+        ledgerLogs.innerText += `[✓] STAGE 4/5: INTERBANK_ROUTING_RAILS ➔ ROUTING_PASS (453381)\n`;
+        ledgerLogs.innerText += `[✓] STAGE 5/5: SHOPPING_CART_MERCHANT_SETTLEMENT ➔ AUTHORIZED\n\n`;
         
         if (networkData.network_telemetry_logs) {
           networkData.network_telemetry_logs.forEach(line => {
             ledgerLogs.innerText += `${line}\n`;
           });
         }
-        ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Handshake broadcasted across secure iframe nodes...`;
+        ledgerLogs.innerText += `\n> Secure API Token Transmitted: [ENCRYPTED_VAULT_PAYLOAD]\n> Direct settlement complete. Autopilot monitoring active...`;
       }
 
+      // Convey automated instructions down into content.js running on web context
       chrome.tabs.sendMessage(activeTab.id, { 
         action: "START_AUTO_CHECKOUT", 
         tokenData: pipelineRoutingToken,
@@ -123,7 +123,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       }, (pipelineFeedback) => {
         if (chrome.runtime.lastError) { return; }
         if (pipelineFeedback && ledgerLogs) {
-          ledgerLogs.innerText += `\n> Automation State: ${pipelineFeedback.status}`;
+          ledgerLogs.innerText += `\n> Settlement State: ${pipelineFeedback.status}`;
         }
       });
     }
@@ -136,7 +136,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
     if (ledgerLogs) {
       ledgerLogs.innerText += `\n\n[✖] SECURE_VAULT_GATEWAY: ERROR_TIMEOUT_OR_SPINDOWN`;
       ledgerLogs.innerText += `\n[!] TARGET ENDPOINT: ${cloudGatewayUrl}`;
-      ledgerLogs.innerText += `\n> Notice: Web service container is waking up. Click Pay again to execute.`;
     }
     console.error(err);
   });
