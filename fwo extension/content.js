@@ -1,46 +1,30 @@
-// Global execution listener to capture popup handshakes safely
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "DISCOVER_LIVE_PRICING") {
-    console.log("[FWO Discovery] Scraping checkout page viewport metrics...");
-    const dynamicPricing = harvestMerchantPriceMatrix();
-    sendResponse({ pricing: dynamicPricing });
-    return true;
-  }
-
-  if (request.action === "START_AUTO_CHECKOUT") {
-    console.log("[FWO Engine] Launching compliant transaction pipeline...");
-    runStealthInjectionSequence(request.tokenData, sendResponse);
-    return true; 
-  }
-});
-
+// Universal scraper matrix optimized for standard and customized checkout structures
 function harvestMerchantPriceMatrix() {
   let todayTotal = "Detecting...";
   let monthlyTotal = "Detecting...";
 
-  // 1. Target standard e-commerce total text configurations dynamically
-  const todaySelectors = [
-    '.total-price', '[class*="total"]', '[id*="total"]', '.gpay-total-amount', 
-    'span:contains("$")', 'div:contains("TODAY")'
-  ];
-  
-  // 2. Extract values based on the exact structure rendered on the web portal page
-  document.querySelectorAll('span, div, p, strong').forEach(el => {
+  // Evaluate the entire text layout of the document tree comprehensively
+  document.querySelectorAll('span, div, p, strong, td, li').forEach(el => {
     const txt = el.innerText.trim().toUpperCase();
-    if (txt.includes("TODAY:") || txt.includes("TOTAL:")) {
+    
+    // Explicit targeting rules matching Google and common platform pricing metrics
+    if (txt.includes("TODAY:") || txt.includes("TOTAL DUE TODAY") || (txt.includes("TODAY") && txt.includes("$"))) {
       const match = el.innerText.match(/\$[0-9,.]+/);
-      if (match) todayTotal = match[0];
+      if (match && todayTotal === "Detecting...") todayTotal = match[0];
     }
-    if (txt.includes("MONTHLY:") || txt.includes("/MO")) {
+    if (txt.includes("MONTHLY:") || txt.includes("BEFORE $") || txt.includes("/MO")) {
       const match = el.innerText.match(/\$[0-9,.]+/);
-      if (match) monthlyTotal = match[0] + "/mo";
+      if (match && monthlyTotal === "Detecting...") monthlyTotal = match[0] + "/mo";
     }
   });
 
-  // Fallback direct regex scrape if contextual targets miss
+  // Fallback broad-spectrum regex scrape loop if contextual targets are nested too deeply
   if (todayTotal === "Detecting...") {
-    const matches = document.body.innerText.match(/\$[0-9,.]+/g);
-    if (matches && matches.length > 0) todayTotal = matches[matches.length - 1]; 
+    const rawMatches = document.body ? document.body.innerText.match(/\$[0-9,.]+/g) : null;
+    if (rawMatches && rawMatches.length > 0) {
+      // Grab the absolute largest money pattern matching your lower checkout metrics window
+      todayTotal = rawMatches[rawMatches.length - 1];
+    }
   }
 
   return {
@@ -48,6 +32,21 @@ function harvestMerchantPriceMatrix() {
     recurring_cost: monthlyTotal
   };
 }
+
+// Global cross-process message pipeline gateway coordinator
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "DISCOVER_LIVE_PRICING") {
+    const matrix = harvestMerchantPriceMatrix();
+    sendResponse({ pricing: matrix });
+    return true;
+  }
+
+  if (request.action === "START_AUTO_CHECKOUT") {
+    console.log("[FWO Core] Target received. Running stealth typing matrix...");
+    runStealthInjectionSequence(request.tokenData, sendResponse);
+    return true;
+  }
+});
 
 function runStealthInjectionSequence(tokenData, sendResponse) {
   const targetSelectors = [
@@ -138,9 +137,8 @@ function renderTripartiteReceiptOverlay(receipt) {
       <div style="text-align: left; background: #f8f9fa; padding: 14px; border-radius: 6px; font-family: monospace; font-size: 11px; margin-bottom: 20px; border: 1px solid #e9ecef; line-height:1.5;">
         <strong>[🧾 LOG RECORDS DETAILED]</strong><br>
         • Consensus Lock ID: ${receipt.consensus_id}<br>
-        • Receipt 1 (Vault Auth): ${receipt.vault_verification}<br>
-        • Receipt 2 (Extension Auth): ${receipt.vault_verification}<br>
-        • Receipt 3 (Portal Success): ${receipt.merchant_verification}<br>
+        • Vault Receipt: ${receipt.vault_verification}<br>
+        • Gateway Receipt: ${receipt.merchant_verification}<br>
         • Status: CLOSED_SUCCESS_LOGGED
       </div>
       <button onclick="window.location.reload()" style="background:#2b8a3e; color:white; border:none; padding:12px 24px; border-radius:6px; font-weight:600; cursor:pointer; width:100%;">Return to Browser</button>
