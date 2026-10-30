@@ -12,38 +12,57 @@
     .billing-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; display: inline-block; }
     .badge-one-time { background: #e7f5ff; color: #1c7ed6; border: 1px solid #a5d8ff; }
     .badge-monthly { background: #fff4e6; color: #f59f00; border: 1px solid #ffe3b3; }
+    
+    /* Address Form Layout */
+    .address-form { display: none; background: #f8f9fa; border: 1px dashed #ced4da; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+    .form-title { font-size: 12px; font-weight: 700; color: #495057; margin-bottom: 6px; text-transform: uppercase; }
+    .input-field { width: 93%; padding: 6px 8px; font-size: 12px; border: 1px solid #ced4da; border-radius: 4px; margin-bottom: 6px; font-family: inherit; }
+    
     .btn-auto { width: 100%; background-color: #2b8a3e; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-auto:hover { background-color: #237032; }
+    .btn-auto:disabled { background-color: #adb5bd; cursor: not-allowed; }
     .status-box { margin-top: 10px; background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 11px; color: #495057; text-align: center; }
-    
-    /* Expanded Terminal Console Output Window */
     .ledger-logs { margin-top: 10px; font-size: 11px; max-height: 140px; height: 140px; overflow-y: auto; background: #212529; color: #f8f9fa; padding: 10px; border-radius: 6px; white-space: pre-wrap; font-family: monospace; line-height: 1.4; border: 1px solid #343a40; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="header">💸 FWO Production Checkout Engine</div>
+    
+    <!-- Pricing Matrix Block (Populated dynamically) -->
     <div class="allocation-container">
       <div class="price-row">
-        <span>One-Time Hardware:</span>
-        <span style="font-weight: 600;">$1,848.99</span>
+        <span>Detected Base Cost:</span>
+        <span id="displayBaseCost" style="font-weight: 600;">Detecting...</span>
       </div>
       <div class="price-row">
-        <span>Recurring Plan Cost:</span>
-        <span style="font-weight: 600;">$77.00/mo</span>
+        <span>Detected Service Tier:</span>
+        <span id="displayTierCost" style="font-weight: 600;">Detecting...</span>
       </div>
       <div class="price-row price-total">
         <span>Initial Vault Charge:</span>
-        <span>$1,848.99</span>
+        <span id="displayTotalCharge">Detecting...</span>
       </div>
       <div style="margin-top: 6px; display: flex; gap: 4px;">
-        <span class="billing-badge badge-one-time">Live Production</span>
+        <span id="badgeContext" class="billing-badge badge-one-time">Analyzing Scope</span>
         <span class="billing-badge badge-monthly">Multi-Node</span>
       </div>
     </div>
-    <button id="injectBtn" class="btn-auto">Pay with FWO Vault Account</button>
-    <div id="logSummary" class="status-box">Status: READY_IDLE</div>
-    <div class="ledger-logs" id="ledgerLogs">> System standing by for multi-stage gateway audit...</div>
+
+    <!-- Step 2: Shipping Capture Area -->
+    <div id="addressFormBlock" class="address-form">
+      <div class="form-title">📍 Dispatch & Delivery Metrics</div>
+      <input type="text" id="shipName" class="input-field" placeholder="Full Name" required />
+      <input type="text" id="shipStreet" class="input-field" placeholder="Street Address" required />
+      <div style="display: flex; gap: 4px;">
+        <input type="text" id="shipCity" class="input-field" placeholder="City" style="width: 50%;" required />
+        <input type="text" id="shipZip" class="input-field" placeholder="Postal Code" style="width: 40%;" required />
+      </div>
+    </div>
+
+    <button id="injectBtn" class="btn-auto" disabled>Analyzing Target Page...</button>
+    <div id="logSummary" class="status-box">Status: DISCOVERY_PHASE</div>
+    <div class="ledger-logs" id="ledgerLogs">> System standing by for target matrix extraction...</div>
   </div>
   <script src="popup.js"></script>
 </body>
