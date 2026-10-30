@@ -52,8 +52,8 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
   
-  // CRITICAL: Targets direct base server root endpoint without trailing token mismatches
-  const cloudGatewayUrl = 'https://onrender.com';
+  // FIXED: Dynamic endpoint consistently mapped to your specific live container url
+  const cloudGatewayUrl = 'https://fwo-backend-cloud.onrender.com';
 
   if (currentTimeoutTtl <= 0) return;
 
@@ -128,8 +128,9 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       logSummary.innerHTML = '<strong>ROUTING RUNTIME ERROR</strong>';
     }
     if (ledgerLogs) {
+      // FIXED: Fallback tracking strings updated to your specific container URL
       ledgerLogs.innerText += `\n\n[✖] SECURE_VAULT_GATEWAY: ERROR_TIMEOUT_OR_SPINDOWN`;
-      ledgerLogs.innerText += `\n[!] TARGET ENDPOINT: ${cloudGatewayUrl}`;
+      ledgerLogs.innerText += `\n[!] TARGET ENDPOINT: https://fwo-backend-cloud.onrender.com`;
       ledgerLogs.innerText += `\n> Notice: Web service container is waking up. Click Pay again to execute.`;
     }
     console.error(err);
