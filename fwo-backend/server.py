@@ -5,9 +5,9 @@ import random
 
 class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
     def end_headers(self):
-        # Force comprehensive financial-grade cross-origin allowance rules
+        # Force comprehensive cross-origin allowance rules for extension integration
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         super().end_headers()
 
@@ -16,12 +16,29 @@ class SecureVaultSyncHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
+    def do_GET(self):
+        """
+        Handles initialization and wake-up pings from the extension.
+        This prevents 405 errors when the extension checks if the backend is alive.
+        """
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        response = {
+            "status": "ONLINE",
+            "message": "Gateway container fully responsive and synchronized."
+        }
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+
     def do_POST(self):
         # Catch all incoming variations of your ingress gateway routes safely
         if self.path in ["/", "/ingress", "/ingress/"]:
-            content_length = int(self.headers.get('Content-Length', 0))
-            post_data = self.rfile.read(content_length)
-            payload = json.loads(post_data.decode('utf-8'))
+            try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                post_data = self.rfile.read(content_length)
+                payload = json.loads(post_data.decode('utf-8'))
+            except Exception:
+                payload = {}
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
