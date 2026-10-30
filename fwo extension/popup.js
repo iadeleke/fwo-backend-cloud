@@ -1,5 +1,6 @@
 let currentTimeoutTtl = 45;
 let expirationCountdownTimer = null;
+let discoveryPollInterval = null;
 let discoveredPricingMatrix = { one_time_cost: "Detecting...", recurring_cost: "Detecting..." };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -11,32 +12,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  // 1. Direct message content.js to extract live price metrics on load
-  chrome.tabs.sendMessage(activeTab.id, { action: "DISCOVER_LIVE_PRICING" }, (response) => {
-    if (chrome.runtime.lastError || !response) {
-      if (ledgerLogs) ledgerLogs.innerText = "> Standing by for checkout matrix initialization...";
-      return;
-    }
-    
-    // 2. Dynamically map harvested values to your interface viewing blocks
-    discoveredPricingMatrix = response.pricing;
-    document.getElementById('hardwareCost').innerText = discoveredPricingMatrix.one_time_cost;
-    document.getElementById('recurringCost').innerText = discoveredPricingMatrix.recurring_cost;
-    document.getElementById('vaultChargeTotal').innerText = discoveredPricingMatrix.one_time_cost;
-    
-    if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
-    if (ledgerLogs) ledgerLogs.innerText = `> Dynamic Price Discovery Locked: Total Identified. Ready to pay.`;
-  });
+  // CONTINUOUS POLLING OVERRIDE: Queries the webpage context iteratively every 500ms until metrics settle
+  discoveryPollInterval = setInterval(() => {
+    chrome.tabs.sendMessage(activeTab.id, { action: "DISCOVER_LIVE_PRICING" }, (response) => {
+      if (chrome.runtime.lastError || !response) return;
+      
+      const pricing = response.pricing;
+      
+      // If a valid money string placeholder was harvested, update user interface layouts and stop the loop
+      if (pricing.one_time_cost !== "Detecting..." || pricing.recurring_cost !== "Detecting...") {
+        clearInterval(discoveryPollInterval); // Freeze discovery loop threads instantly
+        
+        discoveredPricingMatrix = pricing;
+        document.getElementById('hardwareCost').innerText = pricing.one_time_cost;
+        document.getElementById('recurringCost').innerText = pricing.recurring_cost;
+        document.getElementById('vaultChargeTotal').innerText = pricing.one_time_cost;
+        
+        if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
+        if (ledgerLogs) ledgerLogs.innerText = `> Dynamic Price Discovery Locked: Total Identified. Ready to pay.`;
+      }
+    });
+  }, 500);
 
   expirationCountdownTimer = setInterval(() => {
     currentTimeoutTtl--;
     if (currentTimeoutTtl <= 0) {
       clearInterval(expirationCountdownTimer);
+      clearInterval(discoveryPollInterval);
       if (logSummary) {
         logSummary.style.color = '#c92a2a';
         logSummary.innerHTML = "<strong>TIMEOUT OVERRIDE: LOGS ARRESTED</strong>";
       }
-      if (ledgerLogs) {
+      if (ledgerLogs && !ledgerLogs.innerText.includes("PIPELINE COMPLIANT")) {
         ledgerLogs.innerText += `\n\n[✖] GATEWAY LIFETIME EXPIRED: Cloud Socket Closed.`;
         ledgerLogs.innerText += `\n[!] ACTION: Re-open popup or re-verify connection to resume.`;
       }
@@ -52,10 +59,10 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
   
-  // FIXED: Dynamic endpoint consistently mapped to your specific live container url
+  // SECURE TARGET ENDPOINT SPECIFICATION UNIFORMITY
   const cloudGatewayUrl = 'https://fwo-backend-cloud.onrender.com';
 
-  if (currentTimeoutTtl <= 0) return;
+  clearInterval(discoveryPollInterval); // Kill any loose polling processes on checkout action
 
   if (logSummary) logSummary.innerHTML = "<strong>Processing Nodes...</strong>";
   if (ledgerLogs) {
@@ -66,7 +73,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  // 3. Dispatch discovered totals back to Render Vault Core for reservation validation
+  // Dispatch discovered totals back to Render Vault Core for reservation validation
   fetch(cloudGatewayUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -82,7 +89,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   })
   .then(networkData => {
     if (networkData.status === "AUTHORIZED") {
-      clearInterval(expirationCountdownTimer); // Freeze countdown ticker instantly to preserve metrics
+      clearInterval(expirationCountdownTimer);
       
       const pipelineRoutingToken = networkData.iso_bin_routing_token;
       const vaultReceipt = networkData.vault_receipt;
@@ -109,7 +116,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
         ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Handshake broadcasted across secure iframe nodes...`;
       }
 
-      // Convey automated instructions down into content.js running on web context
       chrome.tabs.sendMessage(activeTab.id, { 
         action: "START_AUTO_CHECKOUT", 
         tokenData: pipelineRoutingToken,
@@ -128,9 +134,8 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
       logSummary.innerHTML = '<strong>ROUTING RUNTIME ERROR</strong>';
     }
     if (ledgerLogs) {
-      // FIXED: Fallback tracking strings updated to your specific container URL
       ledgerLogs.innerText += `\n\n[✖] SECURE_VAULT_GATEWAY: ERROR_TIMEOUT_OR_SPINDOWN`;
-      ledgerLogs.innerText += `\n[!] TARGET ENDPOINT: https://fwo-backend-cloud.onrender.com`;
+      ledgerLogs.innerText += `\n[!] TARGET ENDPOINT: ${cloudGatewayUrl}`;
       ledgerLogs.innerText += `\n> Notice: Web service container is waking up. Click Pay again to execute.`;
     }
     console.error(err);
