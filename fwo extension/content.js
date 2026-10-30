@@ -1,29 +1,34 @@
-// Universal scraper matrix optimized for standard and customized checkout structures
+// Universal scraper matrix optimized specifically for the Google Fi Cart layout structure
 function harvestMerchantPriceMatrix() {
   let todayTotal = "Detecting...";
   let monthlyTotal = "Detecting...";
 
-  // Evaluate the entire text layout of the document tree comprehensively
-  document.querySelectorAll('span, div, p, strong, td, li').forEach(el => {
+  // 1. Audit hash strings to verify explicit checkout layer synchronization
+  const billingContextActive = window.location.hash.includes("billing") || window.location.pathname.includes("mycart");
+  console.log(`[FWO Engine] Active Target Sensor State: ${billingContextActive ? "LOCKED" : "SCANNING"}`);
+
+  // 2. Comprehensive DOM evaluation targeting text modules rendered on the web portal page
+  document.querySelectorAll('span, div, p, strong, td, li, h1, h2, h3').forEach(el => {
     const txt = el.innerText.trim().toUpperCase();
     
-    // Explicit targeting rules matching Google and common platform pricing metrics
-    if (txt.includes("TODAY:") || txt.includes("TOTAL DUE TODAY") || (txt.includes("TODAY") && txt.includes("$"))) {
+    // Explicit targeting rules matching Google Fi pricing layout elements
+    if (txt.includes("TODAY") || txt.includes("TOTAL DUE TODAY") || txt.includes("DUE NOW") || txt.includes("SUBTOTAL")) {
       const match = el.innerText.match(/\$[0-9,.]+/);
       if (match && todayTotal === "Detecting...") todayTotal = match[0];
     }
-    if (txt.includes("MONTHLY:") || txt.includes("BEFORE $") || txt.includes("/MO")) {
+    if (txt.includes("MONTHLY") || txt.includes("BEFORE $") || txt.includes("/MO") || txt.includes("PER MONTH")) {
       const match = el.innerText.match(/\$[0-9,.]+/);
       if (match && monthlyTotal === "Detecting...") monthlyTotal = match[0] + "/mo";
     }
   });
 
-  // Fallback broad-spectrum regex scrape loop if contextual targets are nested too deeply
-  if (todayTotal === "Detecting...") {
-    const rawMatches = document.body ? document.body.innerText.match(/\$[0-9,.]+/g) : null;
-    if (rawMatches && rawMatches.length > 0) {
-      // Grab the absolute largest money pattern matching your lower checkout metrics window
-      todayTotal = rawMatches[rawMatches.length - 1];
+  // 3. Fallback direct array match from lower structural elements if text nodes are hidden
+  if (todayTotal === "Detecting..." || todayTotal === null) {
+    const rawMoneyElements = Array.from(document.querySelectorAll('*'))
+      .map(el => el.innerText ? el.innerText.trim() : '')
+      .filter(txt => txt.startsWith('$') && txt.match(/^\$[0-9,.]+/));
+    if (rawMoneyElements.length > 0) {
+      todayTotal = rawMoneyElements[rawMoneyElements.length - 1]; // Select maximum billing total parameter
     }
   }
 
