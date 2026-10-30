@@ -1,13 +1,13 @@
 let currentTimeoutTtl = 45;
 let expirationCountdownTimer = null;
+const cloudGatewayUrl = 'https://fwo-backend-cloud.onrender.com';
 
-document.addEventListener('DOMContentLoaded', async () => {
+function startCountdown() {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
-  
-  if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
 
-  // Start the background countdown loop ticker
+  if (expirationCountdownTimer) clearInterval(expirationCountdownTimer);
+
   expirationCountdownTimer = setInterval(() => {
     currentTimeoutTtl--;
     if (currentTimeoutTtl <= 0) {
@@ -24,23 +24,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
     }
   }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const logSummary = document.getElementById('logSummary');
+  if (logSummary) logSummary.innerHTML = `Status: ACTIVE_TRACKING | TTL: ${currentTimeoutTtl}s`;
+
+  startCountdown();
+
+  // Pre-warm signal sent on popup load to wake up the cold container instance
+  fetch(cloudGatewayUrl, { method: 'GET' })
+    .then(() => console.log("Pre-warm signal delivered to server container."))
+    .catch((err) => console.log("Server container is currently asleep, wake-up sequence initiated.", err));
 });
 
 document.getElementById('injectBtn').addEventListener('click', async () => {
   const logSummary = document.getElementById('logSummary');
   const ledgerLogs = document.getElementById('ledgerLogs');
-  const cloudGatewayUrl = 'https://onrender.com';
 
-  if (logSummary) logSummary.innerHTML = "<strong>Processing Nodes...</strong>";
+  if (logSummary) logSummary.innerHTML = "<strong>Waking Container Nodes...</strong>";
   if (ledgerLogs) {
     ledgerLogs.innerText = `> Initializing Live Multi-Stage Cryptographic Gateway Audit...\n`;
     ledgerLogs.innerText += `[STAGE 1/4] PINGING NETWORK CORE VECTOR...`;
   }
 
+  currentTimeoutTtl = Math.max(currentTimeoutTtl, 60);
+
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab) return;
 
-  // Execute secure payload handshake with Render container gateway
   fetch(cloudGatewayUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -56,7 +68,7 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
   })
   .then(networkData => {
     if (networkData.status === "AUTHORIZED") {
-      clearInterval(expirationCountdownTimer); // Freeze countdown ticker instantly to preserve metrics
+      clearInterval(expirationCountdownTimer);
       
       const pipelineRoutingToken = networkData.iso_bin_routing_token;
       const vaultReceipt = networkData.vault_receipt;
@@ -68,7 +80,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
         logSummary.innerHTML = "<strong>PIPELINE COMPLIANT</strong>";
       }
       
-      // Stream every processing gateway node explicitly to the terminal log screen
       if (ledgerLogs) {
         ledgerLogs.innerText = `[✓] STAGE 1/4 COMPLETE: CLIENT_EXTENSION ➔ ACTIVE (mTLS 1.3)\n`;
         ledgerLogs.innerText += `[✓] STAGE 2/4 COMPLETE: SECURE_VAULT_GATEWAY ➔ AUTHORIZED\n`;
@@ -83,7 +94,6 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
         ledgerLogs.innerText += `\n> Token Released: ${pipelineRoutingToken}\n> Handshake broadcasted across secure iframe nodes...`;
       }
 
-      // Convey automated instructions down into content.js running on web context
       chrome.tabs.sendMessage(activeTab.id, { 
         action: "START_AUTO_CHECKOUT", 
         tokenData: pipelineRoutingToken,
@@ -104,8 +114,14 @@ document.getElementById('injectBtn').addEventListener('click', async () => {
     if (ledgerLogs) {
       ledgerLogs.innerText += `\n\n[✖] SECURE_VAULT_GATEWAY: ERROR_TIMEOUT_OR_SPINDOWN`;
       ledgerLogs.innerText += `\n[!] TARGET ENDPOINT: ${cloudGatewayUrl}`;
-      ledgerLogs.innerText += `\n> Notice: Web service container is waking up. Click Pay again to execute.`;
+      ledgerLogs.innerText += `\n> Notice: Web service container is waking up. Retrying request dynamically...`;
     }
     console.error(err);
+
+    setTimeout(() => {
+      if (document.getElementById('injectBtn')) {
+        document.getElementById('injectBtn').click();
+      }
+    }, 4000);
   });
 });
